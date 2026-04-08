@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <title>Explorar | The Move</title>
+    <style>
+        body { background: #0a0a0a; color: white; font-family: 'Segoe UI', sans-serif; margin: 0; text-align: center; }
+        .navbar { background: #000; padding: 20px; border-bottom: 2px solid #bc13fe; display: flex; justify-content: center; gap: 30px; }
+        .navbar a { color: #bc13fe; text-decoration: none; font-weight: bold; text-transform: uppercase; }
+        .container { display: flex; flex-wrap: wrap; justify-content: center; gap: 25px; padding: 50px 20px; }
+        .card { background: #111; border: 1px solid #333; width: 320px; border-radius: 15px; overflow: hidden; transition: 0.3s; }
+        .card:hover { border-color: #bc13fe; transform: translateY(-5px); }
+        .card img { width: 100%; height: 180px; object-fit: cover; }
+        .info { padding: 20px; text-align: left; }
+        .presence-list { margin-top: 15px; background: #000; padding: 10px; border-radius: 8px; border: 1px solid #222; }
+        .btn { background: #bc13fe; color: black; padding: 12px; display: block; text-align: center; text-decoration: none; font-weight: bold; border-radius: 5px; margin-top: 10px; text-transform: uppercase; font-size: 0.75rem; }
+        .btn-insta { background: transparent; border: 1px solid #bc13fe; color: #bc13fe; }
+        .btn-vou { background: transparent; border: 1px solid #00e5ff; color: #00e5ff; margin-top: 8px; }
+        .btn-remover { background: transparent; border: 1px solid #ff4444; color: #ff4444; margin-top: 8px; }
+    </style>
+</head>
+<body>
+    <nav class="navbar">
+        <a href="/">Home</a>
+        <a href="/sobre">Quem Somos</a>
+        <a href="/eventos">Explorar</a>
+        {% if user %}<a href="/logout" style="color:red">Sair</a>{% endif %}
+    </nav>
+
+    <h1 style="color: #bc13fe; margin-top: 50px;">O QUE FAZER NO FDS</h1>
+
+    <div class="container">
+        {% for e in eventos %}
+        <div class="card">
+            <img src="{{ url_for('static', filename=e.imagem) }}">
+            <div class="info">
+                <h3>{{ e.nome }}</h3>
+                <p style="font-size:0.8rem; color:#888;">{{ e.local }} • {{ e.data }}</p>
+
+                {% if e.tipo == 'show' %}
+                <div class="presence-list">
+                    <span style="font-size: 0.7rem; color: #bc13fe; font-weight: bold;">CONFIRMADOS:</span>
+                    {% if presencas[e.id] %}
+                        {% for nome in presencas[e.id] %}
+                            <span style="display:block; font-size: 0.8rem; border-bottom: 1px solid #111;">✓ {{ nome }}</span>
+                        {% endfor %}
+                    {% else %}
+                        <span style="font-size: 0.7rem; color: #444;">Ninguém ainda.</span>
+                    {% endif %}
+                </div>
+                {% endif %}
+
+                {% if e.tipo == 'show' %}
+                    <a href="{{ e.link if e.link else '#' }}" target="_blank" class="btn">Garantir Ingresso</a>
+                    {% if user and user.nome in presencas[e.id] %}
+                        <a href="/remover/{{ e.id }}" class="btn btn-remover">Desmarcar Presença</a>
+                    {% else %}
+                        <a href="/confirmar/{{ e.id }}" class="btn btn-vou">Vou Estar Lá</a>
+                    {% endif %}
+                {% else %}
+                    <a href="{{ e.link }}" target="_blank" class="btn btn-insta">Ver no Instagram</a>
+                {% endif %}
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+</body>
+</html>

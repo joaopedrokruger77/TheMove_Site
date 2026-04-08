@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <title>The Move | Home</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            /* Imagem de Balada Noturna com luzes roxas e azuis */
+            background: linear-gradient(rgba(0, 0, 0, 0.7), rgba(0, 0, 0, 0.7)),
+                        url('https://images.pexels.com/photos/1190297/pexels-photo-1190297.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=2');
+            background-size: cover;
+            background-position: center;
+            background-attachment: fixed;
+            background-color: #000; /* Fundo reserva caso a imagem falhe */
+            color: white;
+            font-family: 'Segoe UI', sans-serif;
+            height: 100vh;
+            text-align: center;
+            overflow: hidden;
+        }
+        .navbar { background: rgba(0,0,0,0.9); padding: 20px; display: flex; justify-content: center; gap: 35px; border-bottom: 2px solid #bc13fe; }
+        .navbar a { color: #bc13fe; text-decoration: none; font-weight: bold; text-transform: uppercase; letter-spacing: 1.5px; }
+        .hero { height: 75vh; display: flex; flex-direction: column; justify-content: center; align-items: center; }
+        .neon { color: #bc13fe; text-shadow: 0 0 30px #bc13fe; font-size: 6rem; margin: 0; font-weight: 900; letter-spacing: -2px; }
+        .btn { border: 2px solid #bc13fe; color: #bc13fe; padding: 15px 45px; text-decoration: none; font-weight: bold; transition: 0.3s; background: rgba(0,0,0,0.6); text-transform: uppercase; letter-spacing: 1px; }
+        .btn:hover { background: #bc13fe; color: black; box-shadow: 0 0 35px #bc13fe; transform: scale(1.05); }
+    </style>
+</head>
+<body>
+    <nav class="navbar">
+        <a href="/">Home</a>
+        <a href="/sobre">Quem Somos</a>
+        <a href="/eventos">Explorar</a>
+        {% if user %}
+            <a href="/logout" style="color: #ff4444;">Sair</a>
+        {% else %}
+            <a href="/login">Login</a>
+        {% endif %}
+    </nav>
+    <div class="hero">
+        <h1 class="neon">THE MOVE</h1>
+        <p style="color: #fff; letter-spacing: 10px; font-weight: bold; margin-top: 15px; text-shadow: 2px 2px 4px #000;">BRASÍLIA • 2026</p>
+        <br><br><br>
+        <a href="/eventos" class="btn">Explorar Eventos</a>
+    </div>
+</body>
+</html>

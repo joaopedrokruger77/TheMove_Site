@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <title>Login | The Move</title>
+    <style>
+        body { background: #0a0a0a; color: white; font-family: sans-serif; height: 100vh; display: flex; justify-content: center; align-items: center; margin: 0; }
+        .card { background: #111; border: 1px solid #bc13fe; padding: 40px; border-radius: 20px; width: 350px; text-align: center; }
+        input { width: 100%; padding: 12px; margin: 10px 0; background: #000; border: 1px solid #333; color: white; border-radius: 5px; box-sizing: border-box; }
+        .btn { width: 100%; background: #bc13fe; color: black; border: none; padding: 12px; font-weight: bold; cursor: pointer; border-radius: 5px; text-transform: uppercase; }
+        .alert { color: #ff4444; font-size: 0.8rem; margin-bottom: 15px; border: 1px solid #ff4444; padding: 10px; border-radius: 5px; background: rgba(255, 68, 68, 0.1); }
+    </style>
+</head>
+<body>
+    <div class="card">
+        <h2 style="color: #bc13fe;">ENTRAR</h2>
+
+        {% with messages = get_flashed_messages(with_categories=true) %}
+          {% if messages %}
+            {% for category, message in messages %}
+              <div class="alert">{{ message }}</div>
+            {% endfor %}
+          {% endif %}
+        {% endwith %}
+
+        <form action="/login" method="POST">
+            <input type="email" name="email" placeholder="E-mail" required>
+            <input type="password" name="senha" placeholder="Senha" required>
+            <button type="submit" class="btn">Login</button>
+        </form>
+        <p style="font-size: 0.8rem; margin-top: 15px;">Ainda não tem conta? <a href="/cadastrar" style="color: #bc13fe;">Cadastre-se</a></p>
+    </div>
+</body>
+</html>

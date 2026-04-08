@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <title>Cadastro | The Move</title>
+    <style>
+        body { background: #0a0a0a; color: white; font-family: sans-serif; height: 100vh; display: flex; justify-content: center; align-items: center; margin: 0; }
+        .card { background: #111; border: 2px solid #bc13fe; padding: 40px; border-radius: 20px; width: 350px; text-align: center; }
+        h2 { color: #bc13fe; text-shadow: 0 0 10px #bc13fe; }
+        input { width: 100%; padding: 12px; margin: 8px 0; background: #000; border: 1px solid #333; color: white; border-radius: 5px; box-sizing: border-box; }
+        .main-btn { width: 100%; background: #bc13fe; color: black; border: none; padding: 15px; font-weight: bold; cursor: pointer; border-radius: 5px; margin-top: 15px; text-transform: uppercase; }
+    </style>
+</head>
+<body>
+    <div class="card">
+        <h2>CRIAR CONTA</h2>
+        <form action="/cadastrar" method="POST">
+            <input type="text" name="nome" placeholder="Nome Completo" required>
+            <input type="email" name="email" placeholder="E-mail" required>
+            <input type="date" name="nascimento" required title="Data de Nascimento">
+            <input type="password" name="senha" placeholder="Senha" required>
+            <button type="submit" class="main-btn">Cadastrar</button>
+        </form>
+    </div>
+</body>
+</html>

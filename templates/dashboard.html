@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <title>Centro de Comando | The Move</title>
+    <style>
+        body { background: #050505; color: white; font-family: sans-serif; padding: 40px; }
+        .header { border-bottom: 2px solid #bc13fe; padding-bottom: 20px; display: flex; justify-content: space-between; align-items: center; }
+        .neon { color: #bc13fe; text-shadow: 0 0 10px #bc13fe; }
+        .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 30px; margin-top: 30px; }
+        .card { background: #111; border: 1px solid #333; padding: 25px; border-radius: 15px; }
+        table { width: 100%; border-collapse: collapse; margin-top: 15px; }
+        th, td { padding: 12px; text-align: left; border-bottom: 1px solid #222; }
+        th { color: #bc13fe; }
+        .badge { background: #bc13fe; color: black; padding: 3px 8px; border-radius: 4px; font-weight: bold; }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1 class="neon">THE MOVE - COMMAND CENTER</h1>
+        <a href="/" style="color: #666; text-decoration: none;">← Voltar para o Site</a>
+    </div>
+
+    <div class="grid">
+        <div class="card">
+            <h2>USUÁRIOS CADASTRADOS ({{ total_u }})</h2>
+            <table>
+                <thead>
+                    <tr><th>Nome</th><th>E-mail</th></tr>
+                </thead>
+                <tbody>
+                    {% for u in usuarios %}
+                    <tr><td>{{ u.nome }}</td><td>{{ u.email }}</td></tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+
+        <div class="card">
+            <h2>RANKING DE EVENTOS</h2>
+            <table>
+                <thead>
+                    <tr><th>Evento</th><th>Interesse</th></tr>
+                </thead>
+                <tbody>
+                    {% for r in ranking %}
+                    <tr>
+                        <td>{{ r.evento_id }}</td>
+                        <td><span class="badge">{{ r.qtd }}</span> confirmados</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+            <p style="margin-top:20px;">Total de Presenças: <strong>{{ total_p }}</strong></p>
+        </div>
+    </div>
+</body>
+</html>
