@@ -1,0 +1,27 @@
+{% extends 'base.html' %}
+{% block title %}Busca{% endblock %}
+
+{% block content %}
+<div style="max-width: 800px; margin: 50px auto; padding: 20px;">
+    <h2 style="color: #bc13fe; border-bottom: 1px solid #333; padding-bottom: 10px;">Resultados para "{{ query }}"</h2>
+    
+    {% if usuarios %}
+        <div style="display: flex; flex-direction: column; gap: 15px; margin-top: 20px;">
+            {% for u in usuarios %}
+            <div style="background: #111; border: 1px solid #333; border-radius: 10px; padding: 15px; display: flex; align-items: center; justify-content: space-between;">
+                <div style="display: flex; align-items: center; gap: 15px;">
+                    <img src="https://ui-avatars.com/api/?name={{ u.nome }}&background=bc13fe&color=fff" style="width:50px; height:50px; border-radius:50%;" alt="{{ u.nome }}">
+                    <div>
+                        <a href="/perfil/{{ u.username }}" style="color: #fff; text-decoration: none; font-weight: bold; font-size: 1.1rem;">{{ u.username }}</a>
+                        <p style="color: #aaa; margin: 0; font-size: 0.9rem;">{{ u.nome }}</p>
+                    </div>
+                </div>
+                <a href="/perfil/{{ u.username }}" style="border: 1px solid #bc13fe; color: #bc13fe; padding: 5px 15px; border-radius: 15px; text-decoration: none; font-size: 0.8rem;">Ver Perfil</a>
+            </div>
+            {% endfor %}
+        </div>
+    {% else %}
+        <p style="color: #aaa; text-align: center; margin-top: 50px;">Nenhum usuário encontrado com esse termo.</p>
+    {% endif %}
+</div>
+{% endblock %}

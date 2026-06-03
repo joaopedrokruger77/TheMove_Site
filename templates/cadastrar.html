@@ -1,26 +1,17 @@
-<!DOCTYPE html>
-<html lang="pt-br">
-<head>
-    <meta charset="UTF-8">
-    <title>Cadastro | The Move</title>
-    <style>
-        body { background: #0a0a0a; color: white; font-family: sans-serif; height: 100vh; display: flex; justify-content: center; align-items: center; margin: 0; }
-        .card { background: #111; border: 2px solid #bc13fe; padding: 40px; border-radius: 20px; width: 350px; text-align: center; }
-        h2 { color: #bc13fe; text-shadow: 0 0 10px #bc13fe; }
-        input { width: 100%; padding: 12px; margin: 8px 0; background: #000; border: 1px solid #333; color: white; border-radius: 5px; box-sizing: border-box; }
-        .main-btn { width: 100%; background: #bc13fe; color: black; border: none; padding: 15px; font-weight: bold; cursor: pointer; border-radius: 5px; margin-top: 15px; text-transform: uppercase; }
-    </style>
-</head>
-<body>
-    <div class="card">
-        <h2>CRIAR CONTA</h2>
-        <form action="/cadastrar" method="POST">
-            <input type="text" name="nome" placeholder="Nome Completo" required>
-            <input type="email" name="email" placeholder="E-mail" required>
-            <input type="date" name="nascimento" required title="Data de Nascimento">
-            <input type="password" name="senha" placeholder="Senha" required>
-            <button type="submit" class="main-btn">Cadastrar</button>
-        </form>
-    </div>
-</body>
-</html>
+{% extends 'base.html' %}
+{% block title %}Cadastro{% endblock %}
+
+{% block content %}
+<div style="max-width: 400px; margin: 50px auto; background: #111; padding: 40px; border-radius: 20px; border: 1px solid #333; text-align: center;">
+    <h2 style="color: #bc13fe; margin-bottom: 30px;">CADASTRAR</h2>
+    <form method="POST" style="display: flex; flex-direction: column; gap: 15px;">
+        <input type="text" name="nome" placeholder="Nome Completo" required style="padding: 15px; background: #000; border: 1px solid #333; color: white; border-radius: 5px;">
+        <input type="text" name="username" placeholder="Username (ex: @joao)" required style="padding: 15px; background: #000; border: 1px solid #333; color: white; border-radius: 5px;">
+        <input type="email" name="email" placeholder="E-mail" required style="padding: 15px; background: #000; border: 1px solid #333; color: white; border-radius: 5px;">
+        <input type="password" name="senha" placeholder="Senha" required style="padding: 15px; background: #000; border: 1px solid #333; color: white; border-radius: 5px;">
+        <input type="date" name="nascimento" required style="padding: 15px; background: #000; border: 1px solid #333; color: white; border-radius: 5px;">
+        <button type="submit" style="background: #bc13fe; color: black; border: none; padding: 15px; font-weight: bold; border-radius: 5px; cursor: pointer; text-transform: uppercase;">Criar Conta</button>
+    </form>
+    <p style="color: #aaa; margin-top: 20px;">Já tem conta? <a href="/login" style="color: #bc13fe;">Entrar</a></p>
+</div>
+{% endblock %}

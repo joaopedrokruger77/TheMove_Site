@@ -1,37 +1,35 @@
-<!DOCTYPE html>
-<html lang="pt-br">
-<head>
-    <meta charset="UTF-8">
-    <title>Anuncie | The Move</title>
-    <style>
-        body { background: #000; color: white; font-family: sans-serif; margin: 0; }
-        .navbar { background: #000; padding: 20px; border-bottom: 2px solid #bc13fe; display: flex; justify-content: center; gap: 30px; }
-        .navbar a { color: #bc13fe; text-decoration: none; font-weight: bold; text-transform: uppercase; }
-        .hero {
-            height: 80vh;
-            background: linear-gradient(rgba(0,0,0,0.8), rgba(0,0,0,0.8)), url('https://images.pexels.com/photos/1190297/pexels-photo-1190297.jpeg');
-            background-size: cover; background-position: center;
-            display: flex; flex-direction: column; justify-content: center; align-items: center; text-align: center; padding: 20px;
-        }
-        .neon-title { color: #bc13fe; text-shadow: 0 0 20px #bc13fe; font-size: 3.5rem; margin-bottom: 10px; }
-        .btn-zap { background: #bc13fe; color: black; padding: 20px 40px; border-radius: 50px; text-decoration: none; font-weight: bold; font-size: 1.2rem; margin-top: 30px; transition: 0.3s; }
-        .btn-zap:hover { box-shadow: 0 0 30px #bc13fe; transform: scale(1.05); }
-    </style>
-</head>
-<body>
-    <nav class="navbar">
-        <a href="/">Home</a>
-        <a href="/sobre">Quem Somos</a>
-        <a href="/eventos">Explorar</a>
-        <a href="/anuncie">Anuncie</a>
-    </nav>
-    <div class="hero">
-        <h1 class="neon-title">QUER ANUNCIAR SEU EVENTO? VEM SER THE MOVE!</h1>
-        <p style="font-size: 1.3rem; max-width: 700px;">Conecte sua marca ao público mais engajado de Brasília. Transforme visualizações em presenças reais.</p>
-        <p style="margin-top: 20px; font-size: 1.1rem;">Siga-nos: <strong>@themovebsb</strong></p>
-        <a href="https://wa.me/5561981334557" target="_blank" class="btn-zap">CHAMAR NO WHATSAPP (61 98133-4557)</a>
-        <br><br>
-        <a href="/" style="color: #666; text-decoration: none;">← Voltar para a Home</a>
+{% extends 'base.html' %}
+{% block title %}Anuncie | The Move{% endblock %}
+
+{% block extra_css %}
+<style>
+    .anuncie-container {
+        /* Movido para style inline e wrapper */
+    }
+    .contact-info {
+        background: #000;
+        padding: 30px;
+        border-radius: 15px;
+        margin-top: 30px;
+        border: 1px solid #222;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div style="max-width: 800px; margin: 0 auto; text-align: center; padding: 20px;">
+    <div class="anuncie-container" style="margin: 30px auto; background: #111; padding: 40px; border-radius: 20px; border: 1px solid #333;">
+        <h1 style="color: #bc13fe; text-transform: uppercase;">Alcance o Público Certo</h1>
+        <p style="color: #ccc; font-size: 1.1rem; margin-top: 20px;">
+            O The Move conecta pessoas buscando o melhor de Brasília com os eventos e estabelecimentos locais. 
+            Graças ao nosso hub social e recomendação por IA, seu evento chega a quem realmente tem chance de ir.
+        </p>
+        
+        <div class="contact-info">
+            <h3 style="color: white; margin-bottom: 20px;">Entre em contato com nosso time comercial:</h3>
+            <p style="color: #bc13fe; font-size: 1.2rem; font-weight: bold;">comercial@themove.com.br</p>
+            <p style="color: #aaa; margin-top: 15px;">(61) 99999-9999</p>
+        </div>
     </div>
-</body>
-</html>
+</div>
+{% endblock %}

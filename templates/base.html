@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <title>{% block title %}The Move{% endblock %}</title>
+    <style>
+        body { 
+            margin: 0; padding: 0; 
+            background-color: #0a0a0a; color: white; 
+            font-family: 'Segoe UI', sans-serif; 
+        }
+        
+        /* Navbar styling */
+        .navbar { 
+            background: rgba(0,0,0,0.9); 
+            padding: 10px 20px; 
+            display: flex; 
+            align-items: center; 
+            justify-content: space-between; 
+            border-bottom: 2px solid #bc13fe;
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+        }
+        
+        .nav-logo {
+            display: flex;
+            align-items: center;
+            text-decoration: none;
+        }
+        
+        .nav-logo img {
+            height: 25px;
+        }
+        
+        .nav-links {
+            display: flex;
+            gap: 15px;
+            align-items: center;
+        }
+
+        .nav-links a { 
+            color: #bc13fe; 
+            text-decoration: none; 
+            font-weight: bold; 
+            text-transform: uppercase; 
+            letter-spacing: 1px;
+            font-size: 0.85rem;
+            transition: 0.3s;
+        }
+        
+        .nav-links a:hover {
+            text-shadow: 0 0 10px #bc13fe;
+        }
+        
+        .search-bar {
+            background: #111;
+            border: 1px solid #bc13fe;
+            border-radius: 20px;
+            padding: 5px 15px;
+            color: white;
+            outline: none;
+        }
+        
+        .user-menu {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .user-avatar {
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            object-fit: cover;
+            border: 2px solid #bc13fe;
+            transition: 0.3s;
+            animation: glowAvatar 2s infinite alternate;
+        }
+
+        .user-avatar:hover {
+            transform: scale(1.1);
+        }
+
+        @keyframes glowAvatar {
+            0% { box-shadow: 0 0 5px #bc13fe; }
+            100% { box-shadow: 0 0 20px #bc13fe, 0 0 30px #bc13fe; }
+        }
+        
+        .btn-outline {
+            border: 1px solid #bc13fe;
+            color: #bc13fe;
+            padding: 4px 10px;
+            border-radius: 20px;
+            text-decoration: none;
+            text-transform: uppercase;
+            font-size: 0.75rem;
+            font-weight: bold;
+        }
+        .btn-outline:hover {
+            background: #bc13fe;
+            color: black;
+        }
+    </style>
+    {% block extra_css %}{% endblock %}
+</head>
+<body>
+    <nav class="navbar">
+        <a href="/" class="nav-logo">
+            <img src="{{ url_for('static', filename='logo.svg') }}" alt="The Move">
+        </a>
+        
+        <div class="nav-links">
+            <a href="/">Home</a>
+            <a href="/sobre">Quem Somos</a>
+            <a href="/eventos">Programação</a>
+            <a href="/amigos">Amigos</a>
+            <a href="/anuncie">Anuncie</a>
+            <a href="/historico">Histórico</a>
+            
+            {% if user and user.email == 'adm@themove.com' %}
+            <a href="/dashboard" style="color: #bc13fe; font-weight: bold;">Estatísticas</a>
+            {% endif %}
+            
+            <form action="/busca" method="GET" style="margin: 0; display: inline-block;">
+                <input type="text" name="q" class="search-bar" placeholder="Buscar @username">
+            </form>
+        </div>
+        
+        <div class="user-menu">
+            {% if user %}
+                <a href="/perfil/{{ user.username }}" title="Meu Perfil">
+                    <!-- Foto placeholder se não houver, ou a foto do usuario (simplificado) -->
+                    <img src="https://ui-avatars.com/api/?name={{ user.nome }}&background=bc13fe&color=fff" class="user-avatar" alt="Perfil">
+                </a>
+                <a href="/logout" class="btn-outline" style="border-color: #ff4444; color: #ff4444;">Sair</a>
+            {% else %}
+                <a href="/login" class="btn-outline">Login</a>
+                <a href="/cadastrar" class="btn-outline" style="background:#bc13fe; color:black;">Cadastrar</a>
+            {% endif %}
+        </div>
+    </nav>
+    
+    <div style="padding: 20px; text-align: center;">
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                {% for category, message in messages %}
+                    <div style="color: {% if category == 'danger' %}#ff4444{% else %}#00ff00{% endif %}; margin-bottom: 10px; font-weight: bold;">
+                        {{ message }}
+                    </div>
+                {% endfor %}
+            {% endif %}
+        {% endwith %}
+    </div>
+
+    {% block content %}
+    {% endblock %}
+</body>
+</html>

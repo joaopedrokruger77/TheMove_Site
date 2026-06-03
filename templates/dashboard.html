@@ -1,58 +1,79 @@
-<!DOCTYPE html>
-<html lang="pt-br">
-<head>
-    <meta charset="UTF-8">
-    <title>Centro de Comando | The Move</title>
-    <style>
-        body { background: #050505; color: white; font-family: sans-serif; padding: 40px; }
-        .header { border-bottom: 2px solid #bc13fe; padding-bottom: 20px; display: flex; justify-content: space-between; align-items: center; }
-        .neon { color: #bc13fe; text-shadow: 0 0 10px #bc13fe; }
-        .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 30px; margin-top: 30px; }
-        .card { background: #111; border: 1px solid #333; padding: 25px; border-radius: 15px; }
-        table { width: 100%; border-collapse: collapse; margin-top: 15px; }
-        th, td { padding: 12px; text-align: left; border-bottom: 1px solid #222; }
-        th { color: #bc13fe; }
-        .badge { background: #bc13fe; color: black; padding: 3px 8px; border-radius: 4px; font-weight: bold; }
-    </style>
-</head>
-<body>
-    <div class="header">
-        <h1 class="neon">THE MOVE - COMMAND CENTER</h1>
-        <a href="/" style="color: #666; text-decoration: none;">← Voltar para o Site</a>
-    </div>
+{% extends 'base.html' %}
+{% block title %}Dashboard | Centro de Comando{% endblock %}
 
-    <div class="grid">
-        <div class="card">
-            <h2>USUÁRIOS CADASTRADOS ({{ total_u }})</h2>
-            <table>
-                <thead>
-                    <tr><th>Nome</th><th>E-mail</th></tr>
-                </thead>
-                <tbody>
-                    {% for u in usuarios %}
-                    <tr><td>{{ u.nome }}</td><td>{{ u.email }}</td></tr>
-                    {% endfor %}
-                </tbody>
-            </table>
+{% block content %}
+<div style="max-width: 1000px; margin: 40px auto; padding: 0 20px;">
+    <h1 style="color: #bc13fe; border-bottom: 2px solid #bc13fe; padding-bottom: 10px;">PAINEL DE ESTATÍSTICAS</h1>
+    <p style="color: #aaa;">Visualização absoluta de dados (Exclusivo Super Admin)</p>
+    
+    <div style="display: flex; gap: 20px; margin: 30px 0;">
+        <div style="flex: 1; background: #111; padding: 20px; border-radius: 10px; border: 1px solid #333; text-align: center;">
+            <h2 style="margin: 0; color: #bc13fe; font-size: 3rem;">{{ total_u }}</h2>
+            <p style="color: #aaa; text-transform: uppercase;">Usuários Registrados</p>
         </div>
-
-        <div class="card">
-            <h2>RANKING DE EVENTOS</h2>
-            <table>
-                <thead>
-                    <tr><th>Evento</th><th>Interesse</th></tr>
-                </thead>
-                <tbody>
-                    {% for r in ranking %}
-                    <tr>
-                        <td>{{ r.evento_id }}</td>
-                        <td><span class="badge">{{ r.qtd }}</span> confirmados</td>
-                    </tr>
-                    {% endfor %}
-                </tbody>
-            </table>
-            <p style="margin-top:20px;">Total de Presenças: <strong>{{ total_p }}</strong></p>
+        <div style="flex: 1; background: #111; padding: 20px; border-radius: 10px; border: 1px solid #333; text-align: center;">
+            <h2 style="margin: 0; color: #bc13fe; font-size: 3rem;">{{ total_p }}</h2>
+            <p style="color: #aaa; text-transform: uppercase;">Presenças Confirmadas</p>
         </div>
     </div>
-</body>
-</html>
+    
+    <h3 style="color: #fff; margin-top: 40px; margin-bottom: 20px;">Ranking de Previsibilidade de Público (Eventos Bombando)</h3>
+    <div style="background: #111; padding: 20px; border-radius: 10px; border: 1px solid #333;">
+        <canvas id="rankingChart" height="100"></canvas>
+    </div>
+    
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script>
+        const ctx = document.getElementById('rankingChart').getContext('2d');
+        const labels = [{% for r in ranking %}"{{ r.nome }}",{% endfor %}];
+        const data = [{% for r in ranking %}{{ r.qtd }},{% endfor %}];
+        
+        new Chart(ctx, {
+            type: 'bar',
+            data: {
+                labels: labels,
+                datasets: [{
+                    label: 'Confirmados',
+                    data: data,
+                    backgroundColor: '#bc13fe',
+                    borderRadius: 5
+                }]
+            },
+            options: {
+                plugins: {
+                    legend: { display: false }
+                },
+                scales: {
+                    y: { 
+                        beginAtZero: true, 
+                        ticks: { color: '#ccc', stepSize: 1 },
+                        grid: { color: '#333' }
+                    },
+                    x: { 
+                        ticks: { color: '#ccc' },
+                        grid: { display: false }
+                    }
+                }
+            }
+        });
+    </script>
+    
+    <h3 style="color: #fff; margin-top: 40px;">Todos os Usuários</h3>
+    <table style="width: 100%; border-collapse: collapse; margin-top: 15px; background: #111; border-radius: 10px; overflow: hidden;">
+        <tr style="background: #222;">
+            <th style="padding: 15px; text-align: left; color: #bc13fe;">ID</th>
+            <th style="padding: 15px; text-align: left; color: #bc13fe;">Username</th>
+            <th style="padding: 15px; text-align: left; color: #bc13fe;">Email</th>
+            <th style="padding: 15px; text-align: left; color: #bc13fe;">Tags</th>
+        </tr>
+        {% for u in usuarios %}
+        <tr style="border-bottom: 1px solid #333;">
+            <td style="padding: 15px; color: white;">{{ u.id }}</td>
+            <td style="padding: 15px; color: white;">{{ u.username }}</td>
+            <td style="padding: 15px; color: white;">{{ u.email }}</td>
+            <td style="padding: 15px; color: #aaa;">{{ u.tags }}</td>
+        </tr>
+        {% endfor %}
+    </table>
+</div>
+{% endblock %}

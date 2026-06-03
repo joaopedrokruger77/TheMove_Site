@@ -1,0 +1,53 @@
+{% extends 'base.html' %}
+{% block title %}Histórico de Eventos{% endblock %}
+
+{% block extra_css %}
+<style>
+    .historico-card {
+        background: #111;
+        border: 1px solid #333;
+        border-radius: 10px;
+        padding: 15px;
+        display: flex;
+        align-items: center;
+        gap: 20px;
+        margin-bottom: 15px;
+        filter: grayscale(80%);
+        transition: 0.3s;
+    }
+    .historico-card:hover {
+        filter: grayscale(0%);
+        border-color: #bc13fe;
+    }
+    .historico-img {
+        width: 100px;
+        height: 100px;
+        object-fit: cover;
+        border-radius: 10px;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div style="max-width: 800px; margin: 50px auto; padding: 20px;">
+    <h1 style="color: #bc13fe; border-bottom: 1px solid #333; padding-bottom: 10px; margin-bottom: 30px;">HISTÓRICO</h1>
+    
+    <div class="historico-card">
+        <img src="{{ url_for('static', filename='meskla.jpg') }}" class="historico-img" alt="Festival Meskla">
+        <div>
+            <h3 style="margin: 0; color: white;">FESTIVAL MESKLA</h3>
+            <p style="color: #aaa; margin: 5px 0 0 0;">Arena BRB • Passado</p>
+            <span style="display: inline-block; background: #222; padding: 2px 8px; border-radius: 5px; font-size: 0.7rem; margin-top: 10px; color: #666; border: 1px solid #444;">ENCERRADO</span>
+        </div>
+    </div>
+    
+    <div class="historico-card">
+        <img src="{{ url_for('static', filename='ceta.webp') }}" class="historico-img" alt="Cê Tá Doido">
+        <div>
+            <h3 style="margin: 0; color: white;">CÊ TÁ DOIDO</h3>
+            <p style="color: #aaa; margin: 5px 0 0 0;">Brasília • Passado</p>
+            <span style="display: inline-block; background: #222; padding: 2px 8px; border-radius: 5px; font-size: 0.7rem; margin-top: 10px; color: #666; border: 1px solid #444;">ENCERRADO</span>
+        </div>
+    </div>
+</div>
+{% endblock %}

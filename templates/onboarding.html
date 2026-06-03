@@ -1,0 +1,40 @@
+{% extends 'base.html' %}
+{% block title %}Onboarding | Suas Tags{% endblock %}
+
+{% block content %}
+<div style="max-width: 600px; margin: 50px auto; background: #111; padding: 40px; border-radius: 20px; text-align: center; border: 1px solid #bc13fe;">
+    <h1 style="color: #bc13fe; text-transform: uppercase;">Boas vindas!</h1>
+    <p style="color: #aaa; margin-bottom: 30px;">Para a nossa Inteligência Artificial recomendar os melhores rolês pra você, selecione o que você mais curte:</p>
+    
+    <form method="POST">
+        <div style="display: flex; flex-wrap: wrap; gap: 15px; justify-content: center; margin-bottom: 30px;">
+            <label style="background: #222; padding: 10px 20px; border-radius: 20px; cursor: pointer; border: 1px solid #444;">
+                <input type="checkbox" name="tags" value="Eletrônica"> Eletrônica
+            </label>
+            <label style="background: #222; padding: 10px 20px; border-radius: 20px; cursor: pointer; border: 1px solid #444;">
+                <input type="checkbox" name="tags" value="Pagode"> Pagode
+            </label>
+            <label style="background: #222; padding: 10px 20px; border-radius: 20px; cursor: pointer; border: 1px solid #444;">
+                <input type="checkbox" name="tags" value="Bar"> Bar / Boteco
+            </label>
+            <label style="background: #222; padding: 10px 20px; border-radius: 20px; cursor: pointer; border: 1px solid #444;">
+                <input type="checkbox" name="tags" value="Rap"> Rap / Trap
+            </label>
+            <label style="background: #222; padding: 10px 20px; border-radius: 20px; cursor: pointer; border: 1px solid #444;">
+                <input type="checkbox" name="tags" value="Funk"> Funk
+            </label>
+            <label style="background: #222; padding: 10px 20px; border-radius: 20px; cursor: pointer; border: 1px solid #444;">
+                <input type="checkbox" name="tags" value="Sertanejo"> Sertanejo
+            </label>
+            <label style="background: #222; padding: 10px 20px; border-radius: 20px; cursor: pointer; border: 1px solid #444;">
+                <input type="checkbox" name="tags" value="Indie"> Indie / Alternativo
+            </label>
+            <label style="background: #222; padding: 10px 20px; border-radius: 20px; cursor: pointer; border: 1px solid #444;">
+                <input type="checkbox" name="tags" value="Rock"> Rock
+            </label>
+        </div>
+        
+        <button type="submit" style="background: #bc13fe; color: black; border: none; padding: 15px 40px; font-weight: bold; border-radius: 30px; cursor: pointer; text-transform: uppercase;">Salvar Preferências</button>
+    </form>
+</div>
+{% endblock %}
