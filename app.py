@@ -69,79 +69,103 @@ init_db()
 # --- Módulo de IA (Recomendação Híbrida) ---
 def calcular_similaridade_cosseno(tags_user, tags_evento):
     """
-    Calcula o "Match" entre usuário e evento usando Similaridade de Cosseno (Bag of Words simplificado).
-    Vetorização: transforma a string de tags em um vetor de contagem de palavras.
+    SISTEMA DE RECOMENDAÇÃO: CÁLCULO DE SIMILARIDADE
+    Esta função é o "cérebro" matemático do protótipo. Ela calcula a Similaridade de Cosseno
+    entre o que o usuário gosta (tags do usuário) e o que o evento oferece (tags do evento).
     """
+    # 1. Se o usuário ou o evento não tiverem tags, a similaridade é zero.
     if not tags_user or not tags_evento:
         return 0.0
         
+    # 2. Transforma as palavras em listas únicas (sets) para remover duplicadas e padronizar em letras minúsculas
     set_user = set(tags_user.lower().split(','))
     set_evento = set(tags_evento.lower().split(','))
     
+    # 3. Une todas as palavras (tags) possíveis em um único grupo (o "universo" de palavras)
     todas_tags = set_user.union(set_evento)
     
-    # Criando os vetores (1 se a tag existe, 0 se não)
+    # 4. Cria vetores (listas de 0 ou 1). 
+    # Coloca 1 se a palavra existe no gosto da pessoa/evento, e 0 se não existe.
     vetor_u = [1 if tag in set_user else 0 for tag in todas_tags]
     vetor_e = [1 if tag in set_evento else 0 for tag in todas_tags]
     
-    # Produto Escalar
+    # 5. Cálculo do Produto Escalar (multiplica e soma os itens dos vetores que batem)
     produto_escalar = sum(u * e for u, e in zip(vetor_u, vetor_e))
     
-    # Magnitudes
+    # 6. Cálculo das Magnitudes (o tamanho geométrico de cada vetor no espaço)
     mag_u = math.sqrt(sum(u**2 for u in vetor_u))
     mag_e = math.sqrt(sum(e**2 for e in vetor_e))
     
+    # Previne divisão por zero (erro matemático)
     if mag_u == 0 or mag_e == 0:
         return 0.0
         
+    # 7. A Similaridade final é o produto escalar dividido pela multiplicação das magnitudes
+    # O resultado é um número de 0.0 a 1.0 (onde 1.0 é um "Match Perfeito")
     return produto_escalar / (mag_u * mag_e)
 
 def recomendar_eventos(usuario_id):
-    """Retorna lista de eventos com a nota (match) calculada pelo motor Híbrido."""
+    """
+    SISTEMA DE RECOMENDAÇÃO HÍBRIDO (CONTEÚDO + REDE SOCIAL)
+    Esta função varre o banco de dados e cria o ranking personalizado para o usuário atual.
+    """
     with get_db() as db:
+        # A. Busca os gostos musicais do usuário no Banco de Dados
         user = db.execute("SELECT tags FROM usuarios WHERE id = ?", (usuario_id,)).fetchone()
         if not user:
             return []
             
         tags_user = user['tags'] if user['tags'] else ''
+        
+        # B. Busca todos os eventos cadastrados
         eventos = db.execute("SELECT * FROM eventos").fetchall()
         
-        # Pegar os ids dos amigos (quem o usuario segue)
+        # C. Busca os amigos que o usuário segue para ver a "prova social"
         amigos_rows = db.execute("SELECT seguido_id FROM seguidores WHERE seguidor_id = ?", (usuario_id,)).fetchall()
         amigos_ids = [r['seguido_id'] for r in amigos_rows]
         
         recomendacoes = []
+        
+        # Loop: Analisa cada evento individualmente para dar uma nota
         for ev in eventos:
-            # 1. Similaridade de Cosseno (Conteúdo)
+            # PASSO 1: O evento bate com o meu gosto musical? (Similaridade de Conteúdo)
             sim_cosseno = calcular_similaridade_cosseno(tags_user, ev['tags'])
+            
+            # Variável que avisa o Front-end se pelo menos 1 gênero bateu (para mostrar o selo visual)
             is_tag_match = sim_cosseno > 0.0
             
+            # REGRA ESPECIAL DE NEGÓCIO: Patrocinador Master no Topo
             if ev['nome'] == 'NA PRAIA FESTIVAL':
                 is_tag_match = True
-                match_final = 10.0 # Pontuação absurdamente alta pra ficar no topo
+                match_final = 10.0 # Nota absurdamente alta para forçar o primeiro lugar na lista
                 peso_social = 0.0
                 amigos_confirmados = 0
+                
+                # Mesmo no topo, vamos contar quantos amigos vão para mostrar na interface
                 if amigos_ids:
                     placeholders = ','.join('?' for _ in amigos_ids)
                     query = f"SELECT COUNT(*) as qtd FROM presencas WHERE evento_id = ? AND usuario_id IN ({placeholders})"
                     amigos_confirmados = db.execute(query, [ev['id']] + amigos_ids).fetchone()['qtd']
             else:
-                # 2. Peso Social
+                # PASSO 2: Quantos amigos vão? (Peso de Prova Social Colaborativa)
                 peso_social = 0.0
                 amigos_confirmados = 0
                 if amigos_ids:
                     placeholders = ','.join('?' for _ in amigos_ids)
                     query = f"SELECT COUNT(*) as qtd FROM presencas WHERE evento_id = ? AND usuario_id IN ({placeholders})"
                     amigos_confirmados = db.execute(query, [ev['id']] + amigos_ids).fetchone()['qtd']
-                    # Adicionamos 0.2 de peso para cada amigo confirmado
+                    
+                    # Cada amigo dá +20% de bônus na nota social (limitado a 1.0 que é 100%)
                     peso_social = min(amigos_confirmados * 0.2, 1.0)
                 
-                # Match Híbrido = 70% Similaridade + 30% Peso Social
+                # PASSO 3: Cálculo Híbrido Final (A Mágica)
+                # A nota final do evento é 70% o gosto musical do usuário + 30% pra onde os amigos estão indo
                 match_final = (sim_cosseno * 0.7) + (peso_social * 0.3)
             
-            # Converter para porcentagem
+            # PASSO 4: Formata a nota em Porcentagem (ex: 0.85 vira 85%)
             match_pct = round(match_final * 100)
             
+            # Adiciona o evento na lista de resultados
             recomendacoes.append({
                 'evento': dict(ev),
                 'match': match_pct,
@@ -149,8 +173,9 @@ def recomendar_eventos(usuario_id):
                 'amigos_confirmados': amigos_confirmados if amigos_ids else 0
             })
             
-        # Ordenar pelos mais recomendados
+        # Por fim, ordena a lista colocando a maior nota em 1º lugar, e a menor em último
         recomendacoes.sort(key=lambda x: x['match'], reverse=True)
+        
         return recomendacoes
 
 # --- ROTAS ---
