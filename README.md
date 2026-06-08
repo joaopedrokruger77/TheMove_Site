@@ -1,5 +1,3 @@
-Aqui está a versão ajustada do README.md, sem qualquer uso de emojis e formatada especificamente para o GitHub:
-
 The Move – Sistema de Gestão de Eventos
 O The Move é uma plataforma focada em centralizar a curadoria de eventos em Brasília, otimizando a experiência do usuário ao localizar opções de lazer para fins de semana e feriados. O sistema visa resolver a ineficiência na busca por entretenimento, oferecendo um indicador social de popularidade.
 
