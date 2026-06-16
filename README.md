@@ -1,27 +1,47 @@
-The Move – Sistema de Gestão de Eventos
-O The Move é uma plataforma focada em centralizar a curadoria de eventos em Brasília, otimizando a experiência do usuário ao localizar opções de lazer para fins de semana e feriados. O sistema visa resolver a ineficiência na busca por entretenimento, oferecendo um indicador social de popularidade.
+# The Move - Servidor Local
 
-Funcionalidades Principais
-Hub de Eventos: Catálogo dinâmico com listagem de eventos curados.
+Este é o código fonte do **The Move**. Siga as instruções abaixo para rodar o site completo no seu computador.
 
-Interação Social (RSVP): Botão de confirmação de presença com contador público em tempo real.
+## Pré-requisitos
+1. Ter o [Python](https://www.python.org/downloads/) instalado no computador (marcar a caixinha "Add python.exe to PATH" durante a instalação).
+2. Ter o [Git](https://git-scm.com/downloads) instalado para baixar o código.
 
-Filtragem Inteligente: Exibição focada em eventos para fins de semana e feriados.
+## Passo a Passo para Rodar
 
-Gerenciamento (CRUD): Módulo para produtores autorizados cadastrarem, editarem e excluírem eventos.
+### 1. Baixar o Código
+Abra o terminal (Prompt de Comando ou PowerShell) e rode:
+```bash
+git clone https://github.com/joaopedrokruger77/TheMove_Site.git
+cd TheMove_Site
+```
 
-Mobile-First: Interface responsiva otimizada para dispositivos móveis.
+### 2. Instalar as Bibliotecas Necessárias
+Ainda no terminal, rode o comando abaixo para instalar tudo que o site precisa (Flask, Supabase, Google Gemini, etc):
+```bash
+pip install -r requirements.txt
+```
 
-Tecnologias Utilizadas
-Arquitetura: Web Responsiva (Mobile-First).
+### 3. Configurar as Chaves de Acesso
+O projeto precisa se conectar ao Banco de Dados (Supabase) e à Inteligência Artificial (Gemini).
+1. Na pasta do projeto, crie um arquivo chamado **`.env`** (exatamente assim, com o ponto no começo e sem extensão).
+2. Abra esse arquivo no Bloco de Notas ou VS Code e cole o seguinte conteúdo, pedindo as chaves secretas para o João Pedro:
 
-Funcionalidades: CRUD de eventos e contadores em tempo real.
+```env
+SUPABASE_URL=URL_DO_SUPABASE_AQUI
+SUPABASE_ANON_KEY=CHAVE_DO_SUPABASE_AQUI
+GEMINI_API_KEY=CHAVE_DO_GEMINI_AQUI
+```
+*(Substitua os valores pelas chaves reais que o João vai te passar!)*
 
-Diferenciais: Módulo de Inteligência Artificial para curadoria (em desenvolvimento).
+### 4. Rodar o Site
+No terminal, basta rodar o servidor:
+```bash
+python app.py
+```
 
-Status do Projeto
-O projeto foi desenvolvido no âmbito da disciplina de Gerência de Projetos do CEUB (2026/1).
+### 5. Acessar
+Abra o seu navegador de internet e digite:
+👉 **http://127.0.0.1:5000**
 
-Status: Em desenvolvimento (entrega parcial de MVP).
-
-Documentação: Disponível no repositório (Termo de Abertura e Termo de Encerramento).
+Pronto! O site completo do The Move vai estar rodando no seu computador!
+Lembre-se que a tela preta do terminal precisa ficar aberta para o site continuar no ar. Se quiser desligar, clique no terminal e aperte `CTRL + C`.
