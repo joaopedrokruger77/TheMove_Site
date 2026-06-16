@@ -1,40 +1,41 @@
 {% extends 'base.html' %}
-{% block title %}Onboarding | Suas Tags{% endblock %}
+{% block title %}Onboarding | Suas Preferências{% endblock %}
 
 {% block content %}
-<div style="max-width: 600px; margin: 50px auto; background: #111; padding: 40px; border-radius: 20px; text-align: center; border: 1px solid #bc13fe;">
+<div style="max-width: 650px; margin: 50px auto; background: #111; padding: 40px; border-radius: 20px; text-align: center; border: 1px solid #bc13fe;">
     <h1 style="color: #bc13fe; text-transform: uppercase;">Boas vindas!</h1>
-    <p style="color: #aaa; margin-bottom: 30px;">Para a nossa Inteligência Artificial recomendar os melhores rolês pra você, selecione o que você mais curte:</p>
+    <p style="color: #aaa; margin-bottom: 30px;">Pra nossa IA recomendar os melhores rolês, conta pra gente o que você curte:</p>
     
     <form method="POST">
-        <div style="display: flex; flex-wrap: wrap; gap: 15px; justify-content: center; margin-bottom: 30px;">
-            <label style="background: #222; padding: 10px 20px; border-radius: 20px; cursor: pointer; border: 1px solid #444;">
-                <input type="checkbox" name="tags" value="Eletrônica"> Eletrônica
+        <!-- GOSTO MUSICAL -->
+        <h3 style="color: white; margin-bottom: 15px;">🎵 Que som te move?</h3>
+        <p style="color: #666; font-size: 0.85rem; margin-bottom: 15px;">Selecione quantos quiser</p>
+        <div style="display: flex; flex-wrap: wrap; gap: 10px; justify-content: center; margin-bottom: 30px;">
+            {% set generos = ['Eletrônica', 'Pagode', 'Sertanejo', 'Funk', 'Rap / Trap', 'Rock', 'MPB', 'Jazz', 'Indie', 'Pop', 'Samba', 'Forró'] %}
+            {% for g in generos %}
+            <label style="background: #222; padding: 8px 18px; border-radius: 20px; cursor: pointer; border: 1px solid #444; color: #ccc; font-size: 0.9rem; transition: all 0.2s;">
+                <input type="checkbox" name="tags" value="{{ g }}" style="display: none;"
+                    onchange="this.parentElement.style.background = this.checked ? '#bc13fe' : '#222'; this.parentElement.style.color = this.checked ? '#000' : '#ccc'; this.parentElement.style.borderColor = this.checked ? '#bc13fe' : '#444'; this.parentElement.style.fontWeight = this.checked ? 'bold' : 'normal';">
+                {{ g }}
             </label>
-            <label style="background: #222; padding: 10px 20px; border-radius: 20px; cursor: pointer; border: 1px solid #444;">
-                <input type="checkbox" name="tags" value="Pagode"> Pagode
-            </label>
-            <label style="background: #222; padding: 10px 20px; border-radius: 20px; cursor: pointer; border: 1px solid #444;">
-                <input type="checkbox" name="tags" value="Bar"> Bar / Boteco
-            </label>
-            <label style="background: #222; padding: 10px 20px; border-radius: 20px; cursor: pointer; border: 1px solid #444;">
-                <input type="checkbox" name="tags" value="Rap"> Rap / Trap
-            </label>
-            <label style="background: #222; padding: 10px 20px; border-radius: 20px; cursor: pointer; border: 1px solid #444;">
-                <input type="checkbox" name="tags" value="Funk"> Funk
-            </label>
-            <label style="background: #222; padding: 10px 20px; border-radius: 20px; cursor: pointer; border: 1px solid #444;">
-                <input type="checkbox" name="tags" value="Sertanejo"> Sertanejo
-            </label>
-            <label style="background: #222; padding: 10px 20px; border-radius: 20px; cursor: pointer; border: 1px solid #444;">
-                <input type="checkbox" name="tags" value="Indie"> Indie / Alternativo
-            </label>
-            <label style="background: #222; padding: 10px 20px; border-radius: 20px; cursor: pointer; border: 1px solid #444;">
-                <input type="checkbox" name="tags" value="Rock"> Rock
-            </label>
+            {% endfor %}
         </div>
         
-        <button type="submit" style="background: #bc13fe; color: black; border: none; padding: 15px 40px; font-weight: bold; border-radius: 30px; cursor: pointer; text-transform: uppercase;">Salvar Preferências</button>
+        <!-- LOCALIDADE -->
+        <h3 style="color: white; margin-bottom: 15px;">📍 Onde você costuma sair?</h3>
+        <p style="color: #666; font-size: 0.85rem; margin-bottom: 15px;">Selecione quantos quiser</p>
+        <div style="display: flex; flex-wrap: wrap; gap: 10px; justify-content: center; margin-bottom: 30px;">
+            {% set regioes = ['Asa Sul', 'Asa Norte', 'Sudoeste', 'Águas Claras', 'Taguatinga', 'Lago Sul', 'Ceilandia', 'Guará', 'Plano Piloto', 'SAAN / SIA'] %}
+            {% for r in regioes %}
+            <label style="background: #222; padding: 8px 18px; border-radius: 20px; cursor: pointer; border: 1px solid #444; color: #ccc; font-size: 0.9rem; transition: all 0.2s;">
+                <input type="checkbox" name="regioes" value="{{ r }}" style="display: none;"
+                    onchange="this.parentElement.style.background = this.checked ? '#ffd700' : '#222'; this.parentElement.style.color = this.checked ? '#000' : '#ccc'; this.parentElement.style.borderColor = this.checked ? '#ffd700' : '#444'; this.parentElement.style.fontWeight = this.checked ? 'bold' : 'normal';">
+                {{ r }}
+            </label>
+            {% endfor %}
+        </div>
+        
+        <button type="submit" style="background: #bc13fe; color: black; border: none; padding: 15px 40px; font-weight: bold; border-radius: 30px; cursor: pointer; text-transform: uppercase; font-size: 1rem;">Salvar Preferências</button>
     </form>
 </div>
 {% endblock %}

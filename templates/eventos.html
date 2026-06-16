@@ -1,25 +1,22 @@
 {% extends 'base.html' %}
-{% block title %}Programação{% endblock %}
+{% block title %}Eventos | Shows & Festas{% endblock %}
 
 {% block extra_css %}
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
 <style>
     .event-card {
         background: #111;
         border: 1px solid #333;
         border-radius: 15px;
-        margin-bottom: 30px;
+        margin-bottom: 25px;
         overflow: hidden;
-        display: flex;
-        flex-direction: column;
     }
-    .event-img {
-        width: 100%;
-        height: 180px;
-        object-fit: cover;
+    .event-card.recomendado {
+        border: 2px solid #bc13fe;
+        box-shadow: 0 0 15px rgba(188, 19, 254, 0.2);
     }
-    .event-body {
-        padding: 15px;
-    }
+    .event-img { width: 100%; height: 180px; object-fit: cover; }
+    .event-body { padding: 15px; }
     .event-header {
         display: flex;
         justify-content: space-between;
@@ -28,134 +25,315 @@
         padding-bottom: 15px;
         margin-bottom: 15px;
     }
-    .event-header h2 { margin: 0; color: #bc13fe; }
+    .event-header h2 { margin: 0; color: #bc13fe; font-size: 1.2rem; }
     .btn-presence {
-        background: #bc13fe;
-        color: black;
-        border: none;
-        padding: 6px 15px;
-        border-radius: 20px;
-        font-weight: bold;
-        text-decoration: none;
-        text-transform: uppercase;
-        font-size: 0.75rem;
+        background: #bc13fe; color: black; border: none;
+        padding: 6px 15px; border-radius: 20px; font-weight: bold;
+        text-decoration: none; text-transform: uppercase; font-size: 0.75rem;
     }
-    .btn-remove {
-        background: transparent;
-        color: #ff4444;
-        border: 1px solid #ff4444;
-    }
-    .presence-list {
-        display: flex;
-        flex-wrap: wrap;
-        gap: 10px;
-        margin-top: 15px;
-    }
+    .btn-remove { background: transparent; color: #ff4444; border: 1px solid #ff4444; }
+    .presence-list { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 15px; }
     .presence-item {
-        display: flex;
-        align-items: center;
-        background: #000;
-        padding: 5px 10px;
-        border-radius: 20px;
-        border: 1px solid #333;
-        font-size: 0.8rem;
+        display: flex; align-items: center; background: #000;
+        padding: 5px 10px; border-radius: 20px; border: 1px solid #333; font-size: 0.8rem;
     }
-    .presence-item img {
-        width: 25px;
-        height: 25px;
-        border-radius: 50%;
-        margin-right: 8px;
+    .presence-item img { width: 25px; height: 25px; border-radius: 50%; margin-right: 8px; }
+    .selo { font-size: 0.65rem; padding: 3px 8px; border-radius: 4px; display: inline-block; margin-bottom: 5px; text-transform: uppercase; font-weight: bold; }
+    .selo-patrocinado { background-color: #ffd700; color: #000; }
+    .selo-recomendado { background-color: #bc13fe; color: #fff; }
+    .justificativa-ia {
+        background: rgba(188, 19, 254, 0.1); padding: 10px; border-radius: 8px;
+        border-left: 3px solid #bc13fe; margin-bottom: 15px;
     }
-    .selo-recomendado {
-        background-color: #59008f;
-        color: #fff;
-        font-size: 0.6rem;
-        padding: 2px 6px;
-        border-radius: 4px;
-        display: inline-block;
-        margin-bottom: 5px;
-        text-transform: uppercase;
-        font-weight: bold;
-    }
+    .justificativa-ia p { color: #ddd; margin: 0; font-size: 0.9rem; }
+    #map { height: 350px; border-radius: 15px; border: 1px solid #333; margin-bottom: 30px; }
 </style>
 {% endblock %}
 
 {% block content %}
 
-{% macro render_card(ev, is_recomendacao=false, match_pct=0, is_tag_match=false) %}
-    <div class="event-card" style="position: relative;">
-
-        
+{% macro render_card(ev, is_recomendado=false, score=0, justificativa='') %}
+    <div class="event-card{% if is_recomendado %} recomendado{% endif %}">
         {% if ev.imagem %}
         <img src="{{ url_for('static', filename=ev.imagem) }}" class="event-img" alt="{{ ev.nome }}">
         {% endif %}
         <div class="event-body">
             <div class="event-header">
                 <div>
-                    {% if is_recomendacao and is_tag_match %}
-                    <span class="selo-recomendado">Evento Recomendado</span>
+                    {% if ev.is_sponsored %}
+                    <span class="selo selo-patrocinado">★ Patrocinado</span>
                     {% endif %}
-                    <h2>{{ ev.nome }}</h2>
-                    <p style="color: #aaa; margin: 5px 0 0 0;">{{ ev.local }} • {{ ev.data }}</p>
+                    {% if is_recomendado %}
+                    <span class="selo selo-recomendado">🤖 {{ score }}% de acordo com seu gosto</span>
+                    {% endif %}
+                    <div style="display: flex; align-items: center; gap: 10px; margin-top: 5px;">
+                        <h2 style="margin: 0;">{{ ev.nome }}</h2>
+                        {% if user %}
+                            {% if ev.id in favoritos_ids %}
+                                <span onclick="toggleFavorito({{ ev.id }}, this)" data-fav="true" style="cursor: pointer; font-size: 1.2rem;" title="Remover Favorito">⭐</span>
+                            {% else %}
+                                <span onclick="toggleFavorito({{ ev.id }}, this)" data-fav="false" style="cursor: pointer; font-size: 1.2rem; opacity: 0.5;" title="Favoritar">☆</span>
+                            {% endif %}
+                        {% endif %}
+                    </div>
+                    <p style="color: #aaa; margin: 5px 0 0 0;">📍 {{ ev.local }} · 📅 {{ ev.data }}</p>
                     <span style="display: inline-block; background: #222; padding: 3px 10px; border-radius: 10px; font-size: 0.8rem; margin-top: 5px; border: 1px solid #444;">{{ ev.tipo|upper }}</span>
                 </div>
-                {% if ev.tipo != 'bar' %}
-                    {% if user %}
-                        {% set ns = namespace(confirmado=false) %}
+                {% if user %}
+                    {% set user_presencas = [] %}
+                    {% if presencas.get(ev.id) %}
                         {% for p in presencas[ev.id] %}
                             {% if p.username == user.username %}
-                                {% set ns.confirmado = true %}
+                                {% set _ = user_presencas.append(p) %}
                             {% endif %}
                         {% endfor %}
-                        
-                        {% if ns.confirmado %}
-                            <a href="/remover/{{ ev.id }}" class="btn-presence btn-remove">Cancelar Presença</a>
+                    {% endif %}
+                    
+                    {% if ev.nome in ['NA PRAIA FESTIVAL', 'QUINTA MARCHA'] %}
+                        <button onclick="abrirCalendario({{ ev.id }}, '{{ ev.nome }}')" class="btn-presence" style="background-color: #8a2be2; border: none; cursor: pointer;">📅 Escolher Dia</button>
+                        {% if user_presencas|length > 0 %}
+                            <div style="margin-top: 10px; font-size: 0.8rem; color: #ccc;">
+                                Dias confirmados:<br>
+                                {% for p in user_presencas %}
+                                    {% if p.data_presenca %}
+                                        <span style="display: inline-block; background: #333; padding: 2px 5px; border-radius: 4px; margin: 2px;">
+                                            {{ p.data_presenca }} 
+                                            <a href="/remover/{{ ev.id }}?data={{ p.data_presenca }}" style="color: #ff4444; text-decoration: none; font-weight: bold; margin-left: 5px;">X</a>
+                                        </span>
+                                    {% else %}
+                                        <span style="display: inline-block; background: #333; padding: 2px 5px; border-radius: 4px; margin: 2px;">
+                                            Geral
+                                            <a href="/remover/{{ ev.id }}" style="color: #ff4444; text-decoration: none; font-weight: bold; margin-left: 5px;">X</a>
+                                        </span>
+                                    {% endif %}
+                                {% endfor %}
+                            </div>
+                        {% endif %}
+                    {% else %}
+                        {% if user_presencas|length > 0 %}
+                            <a href="/remover/{{ ev.id }}" class="btn-presence btn-remove">Cancelar</a>
                         {% else %}
                             <a href="/confirmar/{{ ev.id }}" class="btn-presence">Vou Estar Lá</a>
                         {% endif %}
-                    {% else %}
-                        <a href="/login" class="btn-presence">Login para Confirmar</a>
                     {% endif %}
+                {% else %}
+                    <a href="/login" class="btn-presence">Login</a>
                 {% endif %}
             </div>
             
-            {% if ev.tipo != 'bar' %}
-                {% if presencas[ev.id] %}
-                    <div>
-                        <p style="color: #ccc; font-weight: bold; margin-bottom: 10px;">Quem da sua rede vai:</p>
-                        <div class="presence-list">
-                            {% for p in presencas[ev.id] %}
-                                <a href="/perfil/{{ p.username }}" class="presence-item" style="color: white; text-decoration: none;">
-                                    <img src="https://ui-avatars.com/api/?name={{ p.nome }}&background=bc13fe&color=fff" alt="{{ p.nome }}">
-                                    {{ p.username }}
-                                </a>
-                            {% endfor %}
-                        </div>
-                    </div>
-                {% else %}
-                    {% if user %}
-                        <p style="color: #666; font-style: italic; margin-top: 10px;">Nenhum amigo confirmou ainda.</p>
-                    {% endif %}
-                {% endif %}
+            {% if is_recomendado and justificativa %}
+            <div class="justificativa-ia">
+                <p><strong>IA:</strong> {{ justificativa }}</p>
+            </div>
             {% endif %}
             
+            {% if presencas.get(ev.id) %}
+                <div>
+                    <p style="color: #ccc; font-weight: bold; margin-bottom: 10px;">Quem vai:</p>
+                    <div class="presence-list">
+                        {% for p in presencas[ev.id] %}
+                            <a href="/perfil/{{ p.username }}" class="presence-item" style="color: white; text-decoration: none; text-align: center; display: inline-flex; flex-direction: column; align-items: center; gap: 5px;">
+                                <img src="https://ui-avatars.com/api/?name={{ p.nome }}&background=bc13fe&color=fff" alt="{{ p.nome }}" style="margin-right: 0;">
+                                <div style="font-size: 0.8rem; line-height: 1.2;">
+                                    {{ p.username }}
+                                    {% if p.data_presenca %}
+                                    <br><span style="font-size: 0.7rem; color: #bc13fe; font-weight: bold;">{{ p.data_presenca[-2:] }}/{{ p.data_presenca[5:7] }}</span>
+                                    {% endif %}
+                                </div>
+                            </a>
+                        {% endfor %}
+                    </div>
+                </div>
+            {% endif %}
         </div>
     </div>
 {% endmacro %}
 
-<div style="max-width: 800px; margin: 40px auto; padding: 0 20px;">
+<div style="max-width: 900px; margin: 30px auto; padding: 0 20px;">
     
-    {% if recomendacoes %}
-        <h1 style="color: #bc13fe; text-align: center; margin-bottom: 20px;">RECOMENDAÇÕES</h1>
-        {% for rec in recomendacoes %}
-            {{ render_card(rec.evento, true, rec.match, rec.is_tag_match) }}
-        {% endfor %}
-    {% else %}
-        <h1 style="color: #bc13fe; text-align: center; margin-bottom: 20px;">PROGRAMAÇÃO: O QUE TÁ ROLANDO</h1>
-        {% for ev in eventos %}
+    <h1 style="color: #bc13fe; margin-bottom: 5px;">🎤 EVENTOS</h1>
+    <p style="color: #666; margin-bottom: 25px;">Shows, festas e baladas em Brasília</p>
+    
+    <!-- MAPA -->
+    <div id="map"></div>
+    
+    {% if page == 1 %}
+        <!-- FAVORITOS -->
+        {% if favoritos %}
+        <h2 style="color: #ff3366; margin-bottom: 20px;">❤️ MEUS FAVORITOS</h2>
+        {% for ev in favoritos %}
             {{ render_card(ev) }}
         {% endfor %}
+        <hr style="border-color: #333; margin: 30px 0;">
+        {% endif %}
+
+        <!-- PATROCINADOS -->
+        {% if patrocinados %}
+        <h2 style="color: #ffd700; margin-bottom: 20px;">★ EM DESTAQUE</h2>
+        {% for ev in patrocinados %}
+            {{ render_card(ev) }}
+        {% endfor %}
+        <hr style="border-color: #333; margin: 30px 0;">
+        {% endif %}
+
+        <!-- RECOMENDADOS -->
+        {% if recomendacoes %}
+        <h2 style="color: #bc13fe; margin-bottom: 20px;">🤖 RECOMENDADOS PARA VOCÊ</h2>
+        {% for rec in recomendacoes %}
+            {{ render_card(rec.evento, is_recomendado=True, score=rec.score, justificativa=rec.justificativa) }}
+        {% endfor %}
+        <hr style="border-color: #333; margin: 30px 0;">
+        {% endif %}
     {% endif %}
+
+    <!-- TODOS -->
+    <h2 style="color: #aaa; margin-bottom: 20px;">🌐 TODOS OS EVENTOS{% if page > 1 %} · Pág. {{ page }}{% endif %}</h2>
+    {% for ev in eventos %}
+        {{ render_card(ev) }}
+    {% endfor %}
     
+    {% if total_pages and total_pages > 1 %}
+    <div style="display: flex; justify-content: center; gap: 8px; margin: 30px 0 50px;">
+        {% for p in range(1, total_pages + 1) %}
+            {% if p == page %}
+            <span style="background: #bc13fe; color: #000; padding: 6px 16px; border-radius: 8px; font-weight: bold;">{{ p }}</span>
+            {% else %}
+            <a href="?page={{ p }}" style="background: #222; color: #fff; padding: 6px 16px; border-radius: 8px; text-decoration: none; border: 1px solid #444;">{{ p }}</a>
+            {% endif %}
+        {% endfor %}
+    </div>
+    {% endif %}
 </div>
+
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script>
+    var map = L.map('map').setView([-15.7939, -47.8828], 11);
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        attribution: '© OpenStreetMap'
+    }).addTo(map);
+    
+    var purpleIcon = L.divIcon({
+        className: 'custom-marker',
+        html: '<div style="background:#bc13fe;width:14px;height:14px;border-radius:50%;border:2px solid #fff;box-shadow:0 0 6px #bc13fe;"></div>',
+        iconSize: [14, 14],
+        iconAnchor: [7, 7]
+    });
+    var goldIcon = L.divIcon({
+        className: 'custom-marker',
+        html: '<div style="background:#ffd700;width:16px;height:16px;border-radius:50%;border:2px solid #fff;box-shadow:0 0 8px #ffd700;"></div>',
+        iconSize: [16, 16],
+        iconAnchor: [8, 8]
+    });
+    
+    var markers = {{ markers_json|safe }};
+    markers.forEach(function(m) {
+        var icon = m.sponsored ? goldIcon : purpleIcon;
+        L.marker([m.lat, m.lng], {icon: icon})
+          .addTo(map)
+          .bindPopup('<strong>' + m.nome + '</strong><br>' + m.local + '<br><em>' + m.data + '</em>');
+    });
+
+    function toggleFavorito(eventoId, el) {
+        const isFav = el.getAttribute('data-fav') === 'true';
+        const url = isFav ? '/desfavoritar/' + eventoId : '/favoritar/' + eventoId;
+        
+        // Toggle visual imediatamente
+        el.setAttribute('data-fav', isFav ? 'false' : 'true');
+        el.innerHTML = isFav ? '☆' : '⭐';
+        el.style.opacity = isFav ? '0.5' : '1';
+        
+        fetch(url, { method: 'POST' })
+        .then(res => res.json())
+        .then(data => {
+            if(data.success) {
+                window.location.reload();
+            } else {
+                alert("Erro: " + (data.error || "Você precisa estar logado."));
+            }
+        });
+    }
+</script>
+
+<!-- MODAL DE CALENDÁRIO -->
+<div id="calendario-modal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); z-index: 1000; align-items: center; justify-content: center;">
+    <div style="background: #111; border: 1px solid #333; padding: 20px; border-radius: 12px; max-width: 400px; width: 90%; max-height: 80vh; display: flex; flex-direction: column; position: relative;">
+        
+        <button onclick="fecharCalendarioSemReload()" style="position: absolute; top: 10px; right: 15px; background: transparent; border: none; color: #aaa; font-size: 1.5rem; cursor: pointer; line-height: 1;">&times;</button>
+        
+        <h3 id="calendario-titulo" style="margin-top: 10px; color: #bc13fe; text-align: center;">Escolha um dia</h3>
+        <div id="calendario-dates" style="overflow-y: auto; display: flex; flex-wrap: wrap; gap: 10px; justify-content: center; margin-bottom: 20px;">
+            <!-- Preenchido via JS -->
+        </div>
+        <button onclick="window.location.reload()" style="background: #bc13fe; color: black; border: none; padding: 10px; border-radius: 8px; cursor: pointer; font-weight: bold;">Concluído</button>
+    </div>
+</div>
+
+<script>
+    function abrirCalendario(eventoId, eventoNome) {
+        const modal = document.getElementById('calendario-modal');
+        const container = document.getElementById('calendario-dates');
+        const titulo = document.getElementById('calendario-titulo');
+        
+        titulo.innerText = "Escolha um dia para " + eventoNome;
+        container.innerHTML = '';
+        
+        let atual = new Date(); // Hoje
+        let fimAno = new Date(2026, 11, 31); // 31 de Dezembro de 2026
+        
+        let dates = [];
+        while (atual <= fimAno) {
+            if (eventoNome === 'QUINTA MARCHA') {
+                if (atual.getDay() === 4) { // 4 = Quinta-feira
+                    dates.push(new Date(atual));
+                }
+            } else {
+                dates.push(new Date(atual));
+            }
+            atual.setDate(atual.getDate() + 1);
+        }
+        
+        if(dates.length === 0) {
+            container.innerHTML = '<p style="color: #aaa;">Nenhum dia disponível este ano.</p>';
+        } else {
+            dates.forEach(d => {
+                let ano = d.getFullYear();
+                let mes = String(d.getMonth() + 1).padStart(2, '0');
+                let dia = String(d.getDate()).padStart(2, '0');
+                
+                let dataIso = ano + '-' + mes + '-' + dia;
+                let dataBr = dia + '/' + mes + '/' + ano;
+                
+                let btn = document.createElement('button');
+                btn.className = "btn-presence";
+                btn.style.margin = "0";
+                btn.style.display = "block";
+                btn.style.background = "#222";
+                btn.style.border = "1px solid #444";
+                btn.style.color = "white";
+                btn.style.textAlign = "center";
+                btn.style.width = "calc(50% - 5px)"; // 2 colunas
+                btn.innerText = dataBr;
+                btn.style.cursor = "pointer";
+                
+                btn.onclick = function() {
+                    btn.innerText = "Marcado! ✔️";
+                    btn.style.background = "#bc13fe";
+                    btn.style.color = "black";
+                    btn.disabled = true;
+                    fetch("/confirmar/" + eventoId + "?data=" + dataIso);
+                };
+                
+                container.appendChild(btn);
+            });
+        }
+        
+        modal.style.display = 'flex';
+    }
+
+    function fecharCalendarioSemReload() {
+        document.getElementById('calendario-modal').style.display = 'none';
+    }
+
+</script>
+
 {% endblock %}

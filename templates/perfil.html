@@ -157,6 +157,9 @@
                     {% for ev in eventos %}
                     <div class="feed-card">
                         <h4>{{ ev.nome }}</h4>
+                        {% if ev.data_presenca %}
+                            <p style="color: #bc13fe; font-weight: bold; margin-bottom: 5px;">📍 Indo dia: {{ ev.data_presenca[-2:] }}/{{ ev.data_presenca[5:7] }}/{{ ev.data_presenca[:4] }}</p>
+                        {% endif %}
                         <p>{{ ev.data }}</p>
                     </div>
                     {% endfor %}

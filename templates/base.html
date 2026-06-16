@@ -113,7 +113,8 @@
         <div class="nav-links">
             <a href="/">Home</a>
             <a href="/sobre">Quem Somos</a>
-            <a href="/eventos">Programação</a>
+            <a href="/eventos">Eventos</a>
+            <a href="/bares">Bares</a>
             <a href="/amigos">Amigos</a>
             <a href="/anuncie">Anuncie</a>
             <a href="/historico">Histórico</a>
@@ -155,5 +156,186 @@
 
     {% block content %}
     {% endblock %}
+
+    <!-- AGENTE THE MOVE CHAT WIDGET -->
+    <style>
+        #agente-btn {
+            position: fixed;
+            bottom: 30px;
+            right: 30px;
+            width: 70px;
+            height: 70px;
+            background: #bc13fe;
+            border-radius: 50%;
+            cursor: pointer;
+            box-shadow: 0 0 20px rgba(188, 19, 254, 0.5);
+            z-index: 1000;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            animation: bounce 2s infinite;
+        }
+        #agente-btn img {
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+        }
+        @keyframes bounce {
+            0%, 20%, 50%, 80%, 100% {transform: translateY(0);}
+            40% {transform: translateY(-15px);}
+            60% {transform: translateY(-7px);}
+        }
+        
+        #agente-chat {
+            position: fixed;
+            bottom: 110px;
+            right: 30px;
+            width: 320px;
+            height: 400px;
+            background: #111;
+            border: 2px solid #bc13fe;
+            border-radius: 15px;
+            z-index: 1000;
+            display: none;
+            flex-direction: column;
+            box-shadow: 0 0 30px rgba(188, 19, 254, 0.3);
+            overflow: hidden;
+        }
+        #agente-header {
+            background: #bc13fe;
+            color: black;
+            padding: 15px;
+            font-weight: bold;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        #agente-messages {
+            flex: 1;
+            padding: 15px;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+        .msg-agente {
+            background: #333;
+            color: white;
+            padding: 10px;
+            border-radius: 10px 10px 10px 0;
+            align-self: flex-start;
+            max-width: 80%;
+            font-size: 0.9rem;
+        }
+        .msg-user {
+            background: #bc13fe;
+            color: black;
+            padding: 10px;
+            border-radius: 10px 10px 0 10px;
+            align-self: flex-end;
+            max-width: 80%;
+            font-size: 0.9rem;
+        }
+        #agente-input-area {
+            display: flex;
+            border-top: 1px solid #333;
+            background: #000;
+        }
+        #agente-input {
+            flex: 1;
+            padding: 12px;
+            background: transparent;
+            border: none;
+            color: white;
+            outline: none;
+        }
+        #agente-send {
+            background: #bc13fe;
+            color: black;
+            border: none;
+            padding: 0 15px;
+            cursor: pointer;
+            font-weight: bold;
+        }
+    </style>
+
+    <div id="agente-btn" onclick="toggleChat()">
+        <img src="{{ url_for('static', filename='agente_the_move.png') }}" alt="Agente The Move">
+    </div>
+
+    <div id="agente-chat">
+        <div id="agente-header">
+            <span>🤖 Agente The Move</span>
+            <span style="cursor:pointer;" onclick="toggleChat()">✖</span>
+        </div>
+        <div id="agente-messages">
+            <div class="msg-agente">Fala galera! Eu sou o Agente The Move. Bora procurar o melhor rolê de hoje? Manda aí!</div>
+        </div>
+        <div id="agente-input-area">
+            <input type="text" id="agente-input" placeholder="Onde é o show do..." onkeypress="if(event.key === 'Enter') sendMsg()">
+            <button id="agente-send" onclick="sendMsg()">ENVIAR</button>
+        </div>
+    </div>
+
+    <script>
+        function toggleChat() {
+            var chat = document.getElementById('agente-chat');
+            chat.style.display = (chat.style.display === 'flex') ? 'none' : 'flex';
+        }
+        
+        function sendMsg() {
+            var input = document.getElementById('agente-input');
+            var msg = input.value.trim();
+            if(!msg) return;
+            
+            var msgContainer = document.getElementById('agente-messages');
+            
+            // User msg
+            var userDiv = document.createElement('div');
+            userDiv.className = 'msg-user';
+            userDiv.innerText = msg;
+            msgContainer.appendChild(userDiv);
+            
+            input.value = '';
+            msgContainer.scrollTop = msgContainer.scrollHeight;
+            
+            // Loading
+            var loadingDiv = document.createElement('div');
+            loadingDiv.className = 'msg-agente';
+            loadingDiv.innerText = 'Digitando...';
+            loadingDiv.id = 'agente-loading';
+            msgContainer.appendChild(loadingDiv);
+            msgContainer.scrollTop = msgContainer.scrollHeight;
+            
+            // Fetch
+            fetch('/agente_chat', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({mensagem: msg})
+            })
+            .then(res => res.json())
+            .then(data => {
+                var load = document.getElementById('agente-loading');
+                if(load) load.remove();
+                
+                var botDiv = document.createElement('div');
+                botDiv.className = 'msg-agente';
+                botDiv.innerText = data.resposta;
+                msgContainer.appendChild(botDiv);
+                msgContainer.scrollTop = msgContainer.scrollHeight;
+            })
+            .catch(err => {
+                var load = document.getElementById('agente-loading');
+                if(load) load.remove();
+                
+                var botDiv = document.createElement('div');
+                botDiv.className = 'msg-agente';
+                botDiv.innerText = "Desculpe, ainda não tenho informação para salvar seu rolê.";
+                msgContainer.appendChild(botDiv);
+                msgContainer.scrollTop = msgContainer.scrollHeight;
+            });
+        }
+    </script>
+
 </body>
 </html>
