@@ -372,6 +372,28 @@ def get_presencas_de_evento_com_usuario(evento_id: int) -> list[dict]:
     return result
 
 
+def get_presencas_por_eventos(eventos_ids: list[int]) -> dict:
+    if not eventos_ids: return {}
+    resp = supabase.table("presencas").select("evento_id, data_presenca, usuarios(nome, username, foto)").in_("evento_id", eventos_ids).execute()
+    result = {ev_id: [] for ev_id in eventos_ids}
+    for row in (resp.data or []):
+        u = row.get("usuarios")
+        if u:
+            u['data_presenca'] = row.get('data_presenca')
+            result[row['evento_id']].append(u)
+    return result
+
+def get_presencas_por_eventos_filtrado(eventos_ids: list[int], usuario_ids: list[int]) -> dict:
+    if not eventos_ids or not usuario_ids: return {}
+    resp = supabase.table("presencas").select("evento_id, data_presenca, usuarios(nome, username, foto)").in_("evento_id", eventos_ids).in_("usuario_id", usuario_ids).execute()
+    result = {ev_id: [] for ev_id in eventos_ids}
+    for row in (resp.data or []):
+        u = row.get("usuarios")
+        if u:
+            u['data_presenca'] = row.get('data_presenca')
+            result[row['evento_id']].append(u)
+    return result
+
 def get_presencas_de_evento_filtrado(evento_id: int, usuario_ids: list[int]) -> list[dict]:
     """
     Retorna usuários que confirmaram presença em um evento,

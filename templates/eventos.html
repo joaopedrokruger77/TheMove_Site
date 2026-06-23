@@ -277,32 +277,38 @@
         titulo.innerText = "Escolha um dia para " + eventoNome;
         container.innerHTML = '';
         
-        let atual = new Date(); // Hoje
-        let fimAno = new Date(2026, 11, 31); // 31 de Dezembro de 2026
-        
-        let dates = [];
-        while (atual <= fimAno) {
-            if (eventoNome === 'QUINTA MARCHA') {
-                if (atual.getDay() === 4) { // 4 = Quinta-feira
-                    dates.push(new Date(atual));
-                }
-            } else {
-                dates.push(new Date(atual));
-            }
-            atual.setDate(atual.getDate() + 1);
-        }
-        
-        if(dates.length === 0) {
-            container.innerHTML = '<p style="color: #aaa;">Nenhum dia disponível este ano.</p>';
-        } else {
-            dates.forEach(d => {
-                let ano = d.getFullYear();
-                let mes = String(d.getMonth() + 1).padStart(2, '0');
-                let dia = String(d.getDate()).padStart(2, '0');
-                
-                let dataIso = ano + '-' + mes + '-' + dia;
-                let dataBr = dia + '/' + mes + '/' + ano;
-                
+        if (eventoNome === 'NA PRAIA FESTIVAL') {
+            const naPraiaShows = [
+                { dataIso: '2026-06-13', text: '13/06 (Sáb): Thiaguinho e Léo Foguete' },
+                { dataIso: '2026-06-14', text: '14/06 (Dom): Banda Eva' },
+                { dataIso: '2026-06-19', text: '19/06 (Sex): Fica Comigo e Rogerinho' },
+                { dataIso: '2026-06-24', text: '24/06 (Qua): Jefferson Moraes e Surra de Modão' },
+                { dataIso: '2026-06-26', text: '26/06 (Sex): Emicida convida Mano Brown, e Duquesa' },
+                { dataIso: '2026-06-27', text: '27/06 (Sáb): Saulo Fernandes e Péricles' },
+                { dataIso: '2026-07-03', text: '03/07 (Sex): João Gomes, Dorgival Dantas e Falamansa' },
+                { dataIso: '2026-07-05', text: '05/07 (Dom): Clayton & Romário e Felipe Amorim' },
+                { dataIso: '2026-07-10', text: '10/07 (Sex): Caetano Veloso e Jorge Vercillo' },
+                { dataIso: '2026-07-11', text: '11/07 (Sáb): Wesley Safadão, Natanzinho Lima e Rey Vaqueiro' },
+                { dataIso: '2026-07-12', text: '12/07 (Dom): Diego & Victor Hugo' },
+                { dataIso: '2026-07-18', text: '18/07 (Sáb): Maria Rita, Martinho da Vila e Mart\'nália' },
+                { dataIso: '2026-07-19', text: '19/07 (Dom): Belo e Pixote' },
+                { dataIso: '2026-07-24', text: '24/07 (Sex): Zé Vaqueiro, Henry Freitas e Syon Trio' },
+                { dataIso: '2026-07-25', text: '25/07 (Sáb): Ícaro & Gilmar e Panda' },
+                { dataIso: '2026-07-31', text: '31/07 (Sex): Veigh, Wiu & Teto, Baco Exu do Blues e Djonga' },
+                { dataIso: '2026-08-01', text: '01/08 (Sáb): Nattan, Matheus & Kauan e Bia Frazzo' },
+                { dataIso: '2026-08-07', text: '07/08 (Sex): Titãs, Os Paralamas do Sucesso e Nando Reis' },
+                { dataIso: '2026-08-08', text: '08/08 (Sáb): Simone Mendes, Filho do Piseiro e Eric Land' },
+                { dataIso: '2026-08-14', text: '14/08 (Sex): Cat Dealers, Victor Lou x Blazy, Gabe x Roddy Lima e Depto' },
+                { dataIso: '2026-08-15', text: '15/08 (Sáb): Bell Marques, Léo Santana e Matheus Fernandes' },
+                { dataIso: '2026-08-21', text: '21/08 (Sex): Pablo, Zezo e Patrick Costa' },
+                { dataIso: '2026-08-22', text: '22/08 (Sáb): Marisa Monte e Silva' },
+                { dataIso: '2026-08-23', text: '23/08 (Dom): Xand Avião (Gravação de DVD)' },
+                { dataIso: '2026-08-28', text: '28/08 (Sex): MC Livinho, Kayblack, Vulgo FK, Caveirinha e MC Hariel' },
+                { dataIso: '2026-08-29', text: '29/08 (Sáb): Pedro Sampaio, Luísa Sonza e Carol Biazin' },
+                { dataIso: '2026-09-19', text: '19/09 (Sáb): Cabaré – Último Encontro (Leonardo e Bruno & Marrone)' }
+            ];
+
+            naPraiaShows.forEach(show => {
                 let btn = document.createElement('button');
                 btn.className = "btn-presence";
                 btn.style.margin = "0";
@@ -310,21 +316,73 @@
                 btn.style.background = "#222";
                 btn.style.border = "1px solid #444";
                 btn.style.color = "white";
-                btn.style.textAlign = "center";
-                btn.style.width = "calc(50% - 5px)"; // 2 colunas
-                btn.innerText = dataBr;
+                btn.style.textAlign = "left";
+                btn.style.width = "100%"; // 1 coluna para caber os nomes
+                btn.style.padding = "10px";
+                btn.innerText = show.text;
                 btn.style.cursor = "pointer";
                 
                 btn.onclick = function() {
-                    btn.innerText = "Marcado! ✔️";
+                    btn.innerText = "Marcado! ✔️ " + show.text;
                     btn.style.background = "#bc13fe";
                     btn.style.color = "black";
                     btn.disabled = true;
-                    fetch("/confirmar/" + eventoId + "?data=" + dataIso);
+                    fetch("/confirmar/" + eventoId + "?data=" + show.dataIso);
                 };
                 
                 container.appendChild(btn);
             });
+
+        } else {
+            let atual = new Date(); // Hoje
+            let fimAno = new Date(2026, 11, 31); // 31 de Dezembro de 2026
+            
+            let dates = [];
+            while (atual <= fimAno) {
+                if (eventoNome === 'QUINTA MARCHA') {
+                    if (atual.getDay() === 4) { // 4 = Quinta-feira
+                        dates.push(new Date(atual));
+                    }
+                } else {
+                    dates.push(new Date(atual));
+                }
+                atual.setDate(atual.getDate() + 1);
+            }
+            
+            if(dates.length === 0) {
+                container.innerHTML = '<p style="color: #aaa;">Nenhum dia disponível este ano.</p>';
+            } else {
+                dates.forEach(d => {
+                    let ano = d.getFullYear();
+                    let mes = String(d.getMonth() + 1).padStart(2, '0');
+                    let dia = String(d.getDate()).padStart(2, '0');
+                    
+                    let dataIso = ano + '-' + mes + '-' + dia;
+                    let dataBr = dia + '/' + mes + '/' + ano;
+                    
+                    let btn = document.createElement('button');
+                    btn.className = "btn-presence";
+                    btn.style.margin = "0";
+                    btn.style.display = "block";
+                    btn.style.background = "#222";
+                    btn.style.border = "1px solid #444";
+                    btn.style.color = "white";
+                    btn.style.textAlign = "center";
+                    btn.style.width = "calc(50% - 5px)"; // 2 colunas
+                    btn.innerText = dataBr;
+                    btn.style.cursor = "pointer";
+                    
+                    btn.onclick = function() {
+                        btn.innerText = "Marcado! ✔️";
+                        btn.style.background = "#bc13fe";
+                        btn.style.color = "black";
+                        btn.disabled = true;
+                        fetch("/confirmar/" + eventoId + "?data=" + dataIso);
+                    };
+                    
+                    container.appendChild(btn);
+                });
+            }
         }
         
         modal.style.display = 'flex';

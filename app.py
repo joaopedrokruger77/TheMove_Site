@@ -78,42 +78,41 @@ app.secret_key = 'the_move_2026_pro_key'
 # --- Módulo de IA (Recomendação Híbrida) ---
 # NOTA: Esta função não foi alterada. Ela não acessa o banco diretamente,
 # apenas recebe dados via parâmetros vindos das funções de abstração.
-def calcular_similaridade_cosseno(tags_user, tags_evento):
+def calcular_similaridade_vetor(tags_user, tags_evento):
     """
-    SISTEMA DE RECOMENDAÇÃO: CÁLCULO DE SIMILARIDADE
-    Esta função é o "cérebro" matemático do protótipo. Ela calcula a Similaridade de Cosseno
-    entre o que o usuário gosta (tags do usuário) e o que o evento oferece (tags do evento).
+    SISTEMA DE RECOMENDAÇÃO: CÁLCULO DE SIMILARIDADE (NOVO MÉTODO)
+    Implementa a similaridade vetorial proposta pelo professor.
+    Cria vetores, compara elementos iguais (u == e), soma os matches 
+    e divide pelo tamanho do vetor.
     """
     # 1. Se o usuário ou o evento não tiverem tags, a similaridade é zero.
     if not tags_user or not tags_evento:
         return 0.0
         
-    # 2. Transforma as palavras em listas únicas (sets) para remover duplicadas e padronizar em letras minúsculas
-    set_user = set(tags_user.lower().split(','))
-    set_evento = set(tags_evento.lower().split(','))
+    # 2. Transforma as palavras em listas únicas (sets) para remover duplicadas e padronizar
+    set_user = set(tag.strip() for tag in tags_user.lower().split(',') if tag.strip())
+    set_evento = set(tag.strip() for tag in tags_evento.lower().split(',') if tag.strip())
     
-    # 3. Une todas as palavras (tags) possíveis em um único grupo (o "universo" de palavras)
+    # 3. Une todas as palavras (tags) possíveis em um único grupo (o tamanho do vetor)
     todas_tags = set_user.union(set_evento)
+    
+    if len(todas_tags) == 0:
+        return 0.0
     
     # 4. Cria vetores (listas de 0 ou 1). 
     # Coloca 1 se a palavra existe no gosto da pessoa/evento, e 0 se não existe.
     vetor_u = [1 if tag in set_user else 0 for tag in todas_tags]
     vetor_e = [1 if tag in set_evento else 0 for tag in todas_tags]
     
-    # 5. Cálculo do Produto Escalar (multiplica e soma os itens dos vetores que batem)
-    produto_escalar = sum(u * e for u, e in zip(vetor_u, vetor_e))
+    # 5. Cálculo dos Matches: soma +1 toda vez que o vetor do usuário for igual ao do evento
+    # Conforme solicitado: int(u == e) -> soma -> divide pelo tamanho
+    soma_matches = sum(int(u == e) for u, e in zip(vetor_u, vetor_e))
     
-    # 6. Cálculo das Magnitudes (o tamanho geométrico de cada vetor no espaço)
-    mag_u = math.sqrt(sum(u**2 for u in vetor_u))
-    mag_e = math.sqrt(sum(e**2 for e in vetor_e))
+    # 6. A Similaridade final é a soma dividida pelo tamanho do vetor
+    # O resultado é um número de 0.0 a 1.0
+    similaridade = soma_matches / len(todas_tags)
     
-    # Previne divisão por zero (erro matemático)
-    if mag_u == 0 or mag_e == 0:
-        return 0.0
-        
-    # 7. A Similaridade final é o produto escalar dividido pela multiplicação das magnitudes
-    # O resultado é um número de 0.0 a 1.0 (onde 1.0 é um "Match Perfeito")
-    return produto_escalar / (mag_u * mag_e)
+    return similaridade
 
 def recomendar_eventos(usuario_id):
     """
@@ -139,10 +138,10 @@ def recomendar_eventos(usuario_id):
     # Loop: Analisa cada evento individualmente para dar uma nota
     for ev in eventos:
         # PASSO 1: O evento bate com o meu gosto musical? (Similaridade de Conteúdo)
-        sim_cosseno = calcular_similaridade_cosseno(tags_user, ev.get('tags'))
+        sim_vetor = calcular_similaridade_vetor(tags_user, ev.get('tags'))
         
         # Variável que avisa o Front-end se pelo menos 1 gênero bateu (para mostrar o selo visual)
-        is_tag_match = sim_cosseno > 0.0
+        is_tag_match = sim_vetor > 0.0
         
         # REGRA ESPECIAL DE NEGÓCIO: Patrocinador Master no Topo
         if ev.get('nome') == 'NA PRAIA FESTIVAL':
@@ -166,7 +165,7 @@ def recomendar_eventos(usuario_id):
             
             # PASSO 3: Cálculo Híbrido Final (A Mágica)
             # A nota final do evento é 70% o gosto musical do usuário + 30% pra onde os amigos estão indo
-            match_final = (sim_cosseno * 0.7) + (peso_social * 0.3)
+            match_final = (sim_vetor * 0.7) + (peso_social * 0.3)
         
         # PASSO 4: Formata a nota em Porcentagem (ex: 0.85 vira 85%)
         match_pct = round(match_final * 100)
@@ -269,9 +268,9 @@ def eventos():
             amostra_eventos = [e for e in all_events if e.get('is_sponsored')] + all_events[:30]
             amostra_unica = {e['id']: e for e in amostra_eventos}.values()
             
-            gemini_results = gerar_recomendacoes(user_profile, list(amostra_unica))
-            if not gemini_results:
-                gemini_results = recomendar_por_tags(user_profile, list(amostra_unica))
+            # Para a apresentação não travar (e focar na lógica do professor), 
+            # pulamos a API do Gemini e usamos direto a similaridade de vetor!
+            gemini_results = recomendar_por_tags(user_profile, list(amostra_unica))
                 
             if gemini_results:
                 try:
@@ -333,16 +332,23 @@ def eventos():
         })
     markers_json = json.dumps(markers)
 
-    for ev in eventos_visiveis:
+    # Otimização: Buscar presenças de uma vez só (evita N+1 queries que causam crash de socket no Windows)
+    presencas_db = {}
+    eventos_ids = [ev['id'] for ev in eventos_visiveis]
+    if eventos_ids:
+        # Busca presenças em lote
         if is_admin:
-            presencas_db[ev['id']] = get_presencas_de_evento_com_usuario(ev['id'])
-        elif user_id: 
-            if amigos_ids:
-                presencas_db[ev['id']] = get_presencas_de_evento_filtrado(ev['id'], amigos_ids)
-            else:
-                presencas_db[ev['id']] = get_presencas_de_evento_filtrado(ev['id'], [user_id])
+            from db_supabase import get_presencas_por_eventos
+            presencas_lote = get_presencas_por_eventos(eventos_ids)
+        elif user_id:
+            from db_supabase import get_presencas_por_eventos_filtrado
+            usuarios_filtro = amigos_ids if amigos_ids else [user_id]
+            presencas_lote = get_presencas_por_eventos_filtrado(eventos_ids, usuarios_filtro)
         else:
-            presencas_db[ev['id']] = []
+            presencas_lote = {}
+            
+        for ev_id in eventos_ids:
+            presencas_db[ev_id] = presencas_lote.get(ev_id, [])
             
     return render_template('eventos.html', 
                            user=session.get('user'), 
@@ -368,6 +374,7 @@ def bares():
     favoritos_ids = []
     
     user_id = session['user']['id'] if session.get('user') else None
+    is_admin = session.get('user') and session['user'].get('email') == 'adm@themove.com'
     
     if user_id:
         favoritos_ids = get_favoritos(user_id)
@@ -378,9 +385,9 @@ def bares():
         amostra_eventos = [e for e in all_bares if e.get('is_sponsored')] + all_bares[:30]
         amostra_unica = {e['id']: e for e in amostra_eventos}.values()
         
-        gemini_results = gerar_recomendacoes(user_profile, list(amostra_unica))
-        if not gemini_results:
-            gemini_results = recomendar_por_tags(user_profile, list(amostra_unica))
+        # Para a apresentação não travar, pulamos a API do Gemini
+        # e usamos direto a similaridade de vetor rápida!
+        gemini_results = recomendar_por_tags(user_profile, list(amostra_unica))
             
         if gemini_results:
             bares_dict = {e['id']: e for e in all_bares}
@@ -439,6 +446,24 @@ def bares():
         })
     markers_json = json.dumps(markers)
 
+    presencas_db = {}
+    bares_ids = [ev['id'] for ev in bares_visiveis]
+    if bares_ids:
+        if is_admin:
+            from db_supabase import get_presencas_por_eventos
+            presencas_lote = get_presencas_por_eventos(bares_ids)
+        elif user_id:
+            from db_supabase import get_presencas_por_eventos_filtrado
+            # Nos bares, os alunos só veem presenças SE for de amigos
+            amigos_ids = get_seguindo_ids(user_id) if not is_admin else []
+            usuarios_filtro = amigos_ids if amigos_ids else [user_id]
+            presencas_lote = get_presencas_por_eventos_filtrado(bares_ids, usuarios_filtro)
+        else:
+            presencas_lote = {}
+            
+        for ev_id in bares_ids:
+            presencas_db[ev_id] = presencas_lote.get(ev_id, [])
+
     return render_template('bares.html', 
                            user=session.get('user'), 
                            recomendacoes=recomendacoes, 
@@ -446,6 +471,7 @@ def bares():
                            patrocinados=bares_patrocinados,
                            favoritos=bares_favoritos,
                            favoritos_ids=favoritos_ids,
+                           presencas=presencas_db,
                            markers_json=markers_json,
                            page=page,
                            total_pages=total_pages)

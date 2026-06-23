@@ -97,19 +97,21 @@ def recomendar_por_tags(user_profile: dict, eventos: list[dict]) -> list[dict]:
         ev_tags = set(t.strip().lower() for t in ev_tags_raw.split(',') if t.strip())
         ev_local = (ev.get('local') or '').lower()
         
-        # 1. Matching de gosto musical (peso alto)
+        # 1. Matching de gosto musical via cálculo Vetorial (u == e)
         if user_tags and ev_tags:
-            # Tags musicais comuns
-            tags_musicais = {'eletrônica', 'pagode', 'sertanejo', 'funk', 'rap', 'trap', 'rock', 'mpb', 'jazz', 'indie', 'pop', 'samba', 'forró', 'axé', 'hip-hop', 'emo'}
-            user_music = user_tags & tags_musicais
-            ev_music = ev_tags & tags_musicais
-            
-            if user_music and ev_music:
-                match = user_music & ev_music
-                if match:
-                    bonus = min(30, len(match) * 15)
+            todas_tags = user_tags.union(ev_tags)
+            if todas_tags:
+                vetor_u = [1 if tag in user_tags else 0 for tag in todas_tags]
+                vetor_e = [1 if tag in ev_tags else 0 for tag in todas_tags]
+                
+                # Soma matches: int(u == e) e divide pelo tamanho do vetor
+                soma_matches = sum(int(u == e) for u, e in zip(vetor_u, vetor_e))
+                similaridade = soma_matches / len(todas_tags)
+                
+                if similaridade > 0:
+                    bonus = min(35, int(similaridade * 50))
                     score += bonus
-                    justificativas.append(f"combina com seu gosto ({', '.join(match)})")
+                    justificativas.append(f"combina com seu gosto ({int(similaridade*100)}% similaridade vetorial)")
                 else:
                     score -= 15
         
